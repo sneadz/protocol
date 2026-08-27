@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { fromISO, toISO } from "@/lib/week";
+import { parseKg } from "@/lib/kg";
 import { useLocal } from "@/lib/useLocal";
 
 type Entry = { d: string; kg: number };
@@ -28,20 +29,19 @@ const fmtDay = (iso: string) => {
 export default function WeightTracker() {
   const [state, setState, loaded] = useLocal<State>("protocol.weight", EMPTY);
   const [draft, setDraft] = useState("");
-  const [editGoal, setEditGoal] = useState(false);
+  /** null = pas en train d'éditer l'objectif. Sinon la saisie en cours. */
+  const [goalDraft, setGoalDraft] = useState<string | null>(null);
 
   const today = toISO(new Date());
   const isSaturday = new Date().getDay() === 6;
   const loggedToday = state.entries.some((e) => e.d === today);
 
   const save = () => {
-    const kg = Number(draft.replace(",", "."));
-    // garde-fou : une faute de frappe ne doit pas ruiner la courbe
-    if (!Number.isFinite(kg) || kg < 20 || kg > 400) return;
-    const rounded = Math.round(kg * 10) / 10;
+    const kg = parseKg(draft);
+    if (kg === null) return;
     setState((s) => ({
       ...s,
-      entries: [...s.entries.filter((e) => e.d !== today), { d: today, kg: rounded }].sort((a, b) =>
+      entries: [...s.entries.filter((e) => e.d !== today), { d: today, kg }].sort((a, b) =>
         a.d < b.d ? -1 : 1,
       ),
     }));
@@ -59,7 +59,17 @@ export default function WeightTracker() {
   ];
 
   // Pas d'objectif encore saisi : on ouvre le champ d'office.
-  const showGoal = editGoal || (loaded && state.goal === null);
+  const showGoal = goalDraft !== null || (loaded && state.goal === null);
+  const goalValue = goalDraft ?? (state.goal === null ? "" : String(state.goal));
+
+  // On ne valide qu'à la sortie du champ : sinon taper "108" est refusé dès
+  // le "1", et sur mobile il n'y a pas de flèches pour s'en sortir.
+  const saveGoal = () => {
+    const g = parseKg(goalValue);
+    if (g !== null) setState((s) => ({ ...s, goal: g }));
+    else if (goalValue.trim() === "") setState((s) => ({ ...s, goal: null }));
+    setGoalDraft(null);
+  };
 
   return (
     <section>
@@ -69,8 +79,8 @@ export default function WeightTracker() {
         </h2>
         <button
           type="button"
-          onClick={() => setEditGoal((v) => !v)}
-          className="text-xs text-neutral-400 underline-offset-2 hover:underline"
+          onClick={() => setGoalDraft(state.goal === null ? "" : String(state.goal))}
+          className="-m-2 p-2 text-xs text-neutral-400 underline-offset-2 hover:underline"
         >
           {state.goal === null ? "Définir un objectif" : `Objectif ${state.goal} kg`}
         </button>
@@ -78,7 +88,7 @@ export default function WeightTracker() {
 
       {showGoal && (
         <div className="mt-3 flex items-center gap-2 rounded-2xl border border-neutral-200 p-3">
-          <label htmlFor="goal" className="text-sm text-neutral-500">
+          <label htmlFor="goal" className="flex-1 text-sm text-neutral-500">
             Objectif
           </label>
           <input
@@ -87,15 +97,20 @@ export default function WeightTracker() {
             inputMode="decimal"
             step="0.5"
             placeholder="—"
-            value={state.goal ?? ""}
-            onChange={(e) => {
-              if (e.target.value === "") return setState((s) => ({ ...s, goal: null }));
-              const g = Number(e.target.value);
-              if (Number.isFinite(g) && g >= 20 && g <= 400) setState((s) => ({ ...s, goal: g }));
-            }}
+            value={goalValue}
+            onChange={(e) => setGoalDraft(e.target.value)}
+            onBlur={saveGoal}
+            onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
             className="w-24 rounded-lg border border-neutral-200 px-2 py-1.5 text-right tabular-nums focus:border-accent focus:outline-none"
           />
           <span className="text-sm text-neutral-400">kg</span>
+          <button
+            type="button"
+            onClick={saveGoal}
+            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white active:opacity-80"
+          >
+            OK
+          </button>
         </div>
       )}
 
