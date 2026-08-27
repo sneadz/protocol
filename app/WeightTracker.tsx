@@ -25,7 +25,7 @@ const fmtDay = (iso: string) => {
 };
 
 export default function WeightTracker() {
-  const [state, setState, loaded] = useLocal<State>("fitweek.weight", EMPTY);
+  const [state, setState, loaded] = useLocal<State>("protocol.weight", EMPTY);
   const [draft, setDraft] = useState("");
   const [editGoal, setEditGoal] = useState(false);
 

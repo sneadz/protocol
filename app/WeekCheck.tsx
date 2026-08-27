@@ -14,7 +14,7 @@ type State = {
 const EMPTY: State = { weekStart: "", checks: Array(7).fill(false), completed: [] };
 
 export default function WeekCheck({ todayIndex }: { todayIndex: number }) {
-  const [state, setState, loaded] = useLocal<State>("fitweek.checks", EMPTY);
+  const [state, setState, loaded] = useLocal<State>("protocol.checks", EMPTY);
 
   // Bascule de semaine : on archive la semaine écoulée si elle était pleine,
   // puis on remet les cases à zéro.

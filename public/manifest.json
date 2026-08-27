@@ -1,6 +1,6 @@
 {
-  "name": "FitWeek",
-  "short_name": "FitWeek",
+  "name": "Protocol",
+  "short_name": "Protocol",
   "description": "Suivi d'entraînement hebdomadaire",
   "start_url": "/",
   "scope": "/",

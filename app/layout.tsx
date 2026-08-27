@@ -3,10 +3,10 @@ import "./globals.css";
 import RegisterSW from "./RegisterSW";
 
 export const metadata: Metadata = {
-  title: "FitWeek",
+  title: "Protocol",
   description: "Suivi d'entraînement hebdomadaire",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, title: "FitWeek", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Protocol", statusBarStyle: "default" },
   icons: { apple: "/icon-192.png" },
 };
 

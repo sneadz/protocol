@@ -2,7 +2,7 @@
 // ont des noms hashés inconnus au moment d'écrire ce fichier, donc on remplit
 // le cache au fil des requêtes au lieu de précacher une liste figée.
 // Bump CACHE pour forcer le renouvellement après un déploiement.
-const CACHE = "fitweek-v2";
+const CACHE = "protocol-v2";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(

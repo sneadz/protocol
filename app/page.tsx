@@ -13,7 +13,7 @@ export default function Page() {
   return (
     <main className="mx-auto max-w-md space-y-8 px-4 pb-16 pt-8">
       <header className="px-1">
-        <h1 className="text-2xl font-semibold tracking-tight">FitWeek</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Protocol</h1>
       </header>
 
       <WeekPlan todayIndex={todayIndex} />
