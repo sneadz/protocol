@@ -16,7 +16,7 @@ import { useLocal } from "@/lib/useLocal";
 type Entry = { d: string; kg: number };
 type State = { goal: number; entries: Entry[] };
 
-const EMPTY: State = { goal: 100, entries: [] };
+const EMPTY: State = { goal: 108, entries: [] };
 const ACCENT = "#4f7ef7";
 
 const fmtDay = (iso: string) => {
