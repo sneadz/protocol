@@ -14,9 +14,10 @@ import { fromISO, toISO } from "@/lib/week";
 import { useLocal } from "@/lib/useLocal";
 
 type Entry = { d: string; kg: number };
-type State = { goal: number; entries: Entry[] };
+/** goal null = pas encore défini, on le demande à la première ouverture. */
+type State = { goal: number | null; entries: Entry[] };
 
-const EMPTY: State = { goal: 108, entries: [] };
+const EMPTY: State = { goal: null, entries: [] };
 const ACCENT = "#4f7ef7";
 
 const fmtDay = (iso: string) => {
@@ -48,13 +49,17 @@ export default function WeightTracker() {
   };
 
   const last = state.entries.at(-1);
-  const delta = last ? Math.round((last.kg - state.goal) * 10) / 10 : null;
+  const delta =
+    last && state.goal !== null ? Math.round((last.kg - state.goal) * 10) / 10 : null;
 
-  const values = [...state.entries.map((e) => e.kg), state.goal];
+  const values = [...state.entries.map((e) => e.kg), ...(state.goal !== null ? [state.goal] : [])];
   const domain: [number, number] = [
     Math.floor(Math.min(...values) - 1),
     Math.ceil(Math.max(...values) + 1),
   ];
+
+  // Pas d'objectif encore saisi : on ouvre le champ d'office.
+  const showGoal = editGoal || (loaded && state.goal === null);
 
   return (
     <section>
@@ -67,11 +72,11 @@ export default function WeightTracker() {
           onClick={() => setEditGoal((v) => !v)}
           className="text-xs text-neutral-400 underline-offset-2 hover:underline"
         >
-          Objectif {state.goal} kg
+          {state.goal === null ? "Définir un objectif" : `Objectif ${state.goal} kg`}
         </button>
       </div>
 
-      {editGoal && (
+      {showGoal && (
         <div className="mt-3 flex items-center gap-2 rounded-2xl border border-neutral-200 p-3">
           <label htmlFor="goal" className="text-sm text-neutral-500">
             Objectif
@@ -81,8 +86,10 @@ export default function WeightTracker() {
             type="number"
             inputMode="decimal"
             step="0.5"
-            value={state.goal}
+            placeholder="—"
+            value={state.goal ?? ""}
             onChange={(e) => {
+              if (e.target.value === "") return setState((s) => ({ ...s, goal: null }));
               const g = Number(e.target.value);
               if (Number.isFinite(g) && g >= 20 && g <= 400) setState((s) => ({ ...s, goal: g }));
             }}
@@ -167,7 +174,9 @@ export default function WeightTracker() {
                     fontSize: 13,
                   }}
                 />
-                <ReferenceLine y={state.goal} stroke="#d4d4d4" strokeDasharray="4 4" />
+                {state.goal !== null && (
+                  <ReferenceLine y={state.goal} stroke="#d4d4d4" strokeDasharray="4 4" />
+                )}
                 <Line
                   type="monotone"
                   dataKey="kg"
